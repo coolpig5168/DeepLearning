@@ -27,7 +27,7 @@ def transposeFeature(data):
     data_feature = data.loc[:, ['CP', 'CQ', 'CM', 'S1', 'S2', 'B1', 'B2', 'SV1', 'SV2', 'BV1', 'BV2', 'BSRATIO']].iloc[0:-windowLength + 1, :]
     feature = np.array(data_feature).tolist()
     data_label = data.loc[:,'CP'].rolling(windowLength).apply(lambda x:x[-1]/x[0]-1)[windowLength-1:]
-    label = np.array(data_label).tolist()
+    label = [[x] for x in data_label]
     return feature,label
 
 

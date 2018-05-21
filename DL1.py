@@ -9,7 +9,7 @@ import data_future
 startDate = '2017-01-01'
 endDate = '2017-12-31'
 factorList = ['rtn_5', 'volume']
-SAMPLE_NUM = 5000
+SAMPLE_NUM = 10000
 NODES_IN = 12
 NODES_OUT = 1
 HIDDEN_NODES = 5
