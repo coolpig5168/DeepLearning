@@ -4,17 +4,23 @@ import numpy as np
 import sys
 sys.path.append('D:\\PythonSpace\\TensorFlow')
 import factorMat as FM
+import data_future
 
 startDate = '2017-01-01'
 endDate = '2017-12-31'
 factorList = ['rtn_5', 'volume']
 SAMPLE_NUM = 5000
-NODES_IN = len(factorList)
-NODES_OUT = 21
+NODES_IN = 12
+NODES_OUT = 1
 HIDDEN_NODES = 5
 LEARNING_RATE = 0.5
 STEP_NUM = 2000
 
+
+def prepareData_FutureTick():
+    tickData = data_future.getFutureTickData()
+    x_data, y_data = data_future.transposeFeature(tickData)
+    return x_data, y_data
 
 def prepareData_StockFactor():
     fobj = FM.factorMat(factorList,startDate,endDate)
@@ -39,7 +45,7 @@ def nn_layer(input_data,input_size,output_size,activation_function=None):
         else:
             return activation_function(output)
 
-x_data, y_data = prepareData_StockFactor()
+x_data, y_data = prepareData_FutureTick()
 x_data = x_data[:min(SAMPLE_NUM,len(x_data)-1)]
 y_data = y_data[:min(SAMPLE_NUM,len(y_data)-1)]
 
@@ -51,13 +57,14 @@ layer_h1 = nn_layer(xs,NODES_IN,HIDDEN_NODES,activation_function=tf.nn.relu)
 layer_h2 = nn_layer(layer_h1,HIDDEN_NODES,HIDDEN_NODES,activation_function=tf.nn.relu)
 y_pred = nn_layer(layer_h2,HIDDEN_NODES,NODES_OUT)
 
-# 均方误差--回归问题
-# loss = tf.reduce_mean(tf.reduce_sum(tf.square(ys - y_pred),reduction_indices=[1]))
-# 交叉熵--分类问题
+
 with tf.name_scope('loss'):
-    cross_entropy = tf.nn.softmax_cross_entropy_with_logits_v2(labels=ys,logits=y_pred)
-    cross_entropy_mean = tf.reduce_mean(cross_entropy)
-    loss = cross_entropy_mean
+    # 均方误差--回归问题
+    loss = tf.reduce_mean(tf.reduce_sum(tf.square(ys - y_pred),reduction_indices=[1]))
+    # 交叉熵--分类问题
+    # cross_entropy = tf.nn.softmax_cross_entropy_with_logits_v2(labels=ys,logits=y_pred)
+    # cross_entropy_mean = tf.reduce_mean(cross_entropy)
+    # loss = cross_entropy_mean
 
 with tf.name_scope('train'):
     optimizer = tf.train.GradientDescentOptimizer(LEARNING_RATE)
@@ -65,7 +72,7 @@ with tf.name_scope('train'):
 
 init = tf.global_variables_initializer()
 with tf.Session() as sess:
-    writer = tf.summary.FileWriter("logs/",sess.graph)
+    # writer = tf.summary.FileWriter("logs/",sess.graph)
     sess.run(init)
     for step in range(STEP_NUM):
         sess.run(train,feed_dict={xs:x_data,ys:y_data})
